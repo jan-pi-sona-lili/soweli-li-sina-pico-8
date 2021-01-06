@@ -4,4 +4,4 @@ A (work-in-progress) recreation of the Nordic Game Jam version of Baba is You in
 
 
 
-![](https://cdn.discordapp.com/attachments/769994761653714987/796526717233659984/unknown.png)
+![](https://cdn.discordapp.com/attachments/769994761653714987/796528116183990292/unknown.png)
