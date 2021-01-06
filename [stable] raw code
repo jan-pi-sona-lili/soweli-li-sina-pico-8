@@ -1,0 +1,88 @@
+--none of these comments exist in the .p8 version, as to save space.
+function w(n)for x=1,n do flip() end end --wait for n frames
+lc=-1 --levelcount
+q=16
+a=add 
+m=mget
+lv1={23,4,4,29,1,1} --this is just an example of how I store the sprites and locations. format is {spritenumber, x, y; repeat}
+lv2={} --this is for operatations that require the full use of lv1 each frame, so calculations are done with this.
+
+baba={psh=0,kl=0,slp=0,mlt=0, --each attribute is a boolean (other than id, which is the sprite number)
+snk=0,win=0,stp=0,ht=0,u=1,mv=0, --the weird newlining is to fit the text on-screen (pico-8 has a small screen width and it's annoying to jump back and forth).
+id=23}
+
+stone={psh=0,kl=0,slp=0,mlt=0,
+snk=0,win=0,stp=1,ht=0,u=0,mv=0,
+id=29}
+
+asdf={baba,stone} --not sure what you call these, metatables? they're quite useful.   
+
+function gtmap() --this (should) copy a 16x16 block of tiles from the map. unfortunately it doesn't completely work and seems to read from non-existent(?) values in the top row; all the other rows are (mostly?) correct. eventually, this will be modified to read from a number that will specify how many levels to read from before ending. 
+ lv2={}
+ if lc<8 then --the map is 
+  for o=lc*q,(lc+1)*q do
+	 for p=0,15 do
+		a(lv2,m(o,p))
+	  a(lv2,0)a(lv2,0)
+	 end
+  end
+ --[[this part doesn't seem to be working for unknown reasons and so has been commented out. It doesn't affect anything (as it hadn't been doing anything anyway).
+ else
+  for o=lc*q,(lc+1)*q do
+   for p=16,32 do
+    a(lv2,m(o,p))
+ 		a(lv2,0)a(lv2,0)
+ 	 end
+ 	end--]]
+ end
+ corr()	
+end
+
+function corr()
+ for x=0,255 do --this may look weird if you don't know what this is doing. "i=[number] for x=0,i^2 do pset(x%i,x\i) end" is equivalent to "i=[number] for x=0,i for y=0,i do pset(x,y) end" 
+	lv2[x*3-1]=x\q
+	lv2[x*3]=x%q
+ end
+ lv1=lv2
+end
+
+function you()
+ for x=1,#asdf do --for every kind of tile:
+	w(2)
+	cls()
+	for g=1,#lv1,3 do --draws all the sprites
+ 	 spr(lv1[g],lv1[g+1]*8,lv1[g+2]*8)
+	 --mset(lv1[g+1],lv1[g+2],lv1[g]) these two aren't working correctly (and I know why, I just need a make a solution).
+	 --map(0,48,0,0,16,16)
+	end
+	local c=asdf[x].u
+	local b=asdf[x].id
+	if c and btn(R) then --if the kind of tile specified earlier has the you (u) property and you're pressing right
+	 for y=1,#lv1,3 do --for every tile in the lv1 array
+		if(lv1[y]==b and c==1and lv1[y+1]<15)lv1[y+1]+=1 --if the spritenumber matches with the id of specified kind of tile and that kind of tile is you and you aren't on the edge of the map, increment the x posistion by 1
+	 end
+	end 
+	if c and btn(L) then --repeat for each direction
+	 for y=1,#lv1,3 do
+		if(lv1[y]==b and c==1and lv1[y+1]>0)lv1[y+1]-=1
+	 end
+	end
+	if c and btn(U) then
+	 for y=1,#lv1,3 do
+		if(lv1[y]==b and c==1and lv1[y+2]>0)lv1[y+2]-=1
+	 end
+	end
+	if c and btn(D) then
+	 for y=1,#lv1,3 do
+		if(lv1[y]==b and c==1and lv1[y+2]<15)lv1[y+2]+=1
+	 end
+	end
+ end
+end
+
+function _update()
+ local gh=lc --the following 3 lines of code are for testing purposes to see if the gtmap() function is working, basically incrementing the lc (levelcounter)
+ if(btn(X))lc+=1w(1)
+ if(gh!=lc)gtmap()
+ you()
+end
